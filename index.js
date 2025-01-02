@@ -100,10 +100,7 @@ const cors = require('cors')
 const messagebird = require('messagebird').initClient(
   '2c1930bc-991f-4c5a-a617-35f1451282ba'
 )
-// console.log("messagebird",messagebird)
-// const BIRD_API_KEY = '2c1930bc-991f-4c5a-a617-35f1451282ba'
-// const WORKSPACE_ID = 'f8f5bb9b-7243-48d8-9bcc-29b3792a27aa'
-// const CHANNEL_ID = '367dbe7b-7e2b-5be1-a4c7-6327128b7b6b'
+console.log("messagebird",messagebird)
 
 const app = express()
 app.use(bodyParser.json())
@@ -114,60 +111,44 @@ const FROM_EMAIL = 'inbox@eafc6b28-4776-475e-b22f-5bc46248f8fd.us.incoming-email
 app.post('/send-verification-email', async (req, res) => {
     console.log("api hiit hoooaaah")
   
-  
-//     console.log('Send verification email API hit')
-//   const { to, subject, timeout } = req.body
+    console.log('Send verification email API hit')
+  const { to, subject, timeout } = req.body
 
-//   if (!to || !subject) {
-//     return res
-//       .status(400)
-//       .send({ error: 'Recipient email and subject are required.' })
-//   }
+  if (!to || !subject) {
+    return res
+      .status(400)
+      .send({ error: 'Recipient email and subject are required.' })
+  }
 
-//   const additionalParams = {
-//     subject: subject,
-//     template: 'Your security token: %token',
-//     timeout: timeout || 300 // Default timeout to 300 seconds
-//   }
+  const additionalParams = {
+    subject: subject,
+    template: 'Your security token: %token',
+    timeout: timeout || 300 // Default timeout to 300 seconds
+  }
 
   try {
-    // messagebird.verify.createWithEmail(
-    //   FROM_EMAIL,
-    //   to,
-    //   additionalParams,
-    //   (err, response) => {
-    //     if (err) {
-    //       console.error('Error sending email verification token:', err)
-    //       return res
-    //         .status(500)
-    //         .send({
-    //           error: err.message || 'Failed to send email verification token.'
-    //         })
-    //     }
-    //     console.log('Verification token sent:', response)
-    //     res.status(200).send(response)
-    //   }
-      // )
-      
-
-
-      messagebird.balance.read((err, response) => {
-  if (err) {
-    console.error('Balance API Error:', err)
-  } else {
-    console.log('Balance Response:', response)
-  }
-})
-
+    messagebird.verify.createWithEmail(
+      FROM_EMAIL,
+      to,
+      additionalParams,
+      (err, response) => {
+        if (err) {
+          console.error('Error sending email verification token:', err)
+          return res
+            .status(500)
+            .send({
+              error: err.message || 'Failed to send email verification token.'
+            })
+        }
+        console.log('Verification token sent:', response)
+        res.status(200).send(response)
+      }
+    )
   } catch (error) {
       console.log("kilo",error)
     console.error('Unexpected error:', error)
     res.status(500).send({ error: 'Unexpected error occurred.' })
-      }
-    
-
-   
-
+  }
 })
 
 app.post('/validate-token', async (req, res) => {
