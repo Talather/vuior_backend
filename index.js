@@ -94,113 +94,207 @@
 
 
 
-const express = require('express')
-const bodyParser = require('body-parser')
-const cors = require('cors')
-const messagebird = require('messagebird').initClient(
-  '2c1930bc-991f-4c5a-a617-35f1451282ba'
-)
-console.log("messagebird",messagebird)
+// const express = require('express')
+// const bodyParser = require('body-parser')
+// const cors = require('cors')
+// const messagebird = require('messagebird').initClient(
+//   'd8ZlX7QODxzOVmeX5oojnjqe4RGA5xUzCLeD'
+// )
+// // console.log("messagebird",messagebird)
+
+// const app = express()
+// app.use(bodyParser.json())
+// app.use(cors())
+
+// const FROM_EMAIL = 'inbox@eafc6b28-4776-475e-b22f-5bc46248f8fd.us.incoming-email.us-west-2.api.bird.com ' // Replace with the verified sender email
+
+// app.post('/send-verification-email', async (req, res) => {
+//     console.log("api hiit hoooaaah")
+  
+//     console.log('Send verification email API hit')
+//   const { to, subject, timeout } = req.body
+
+//   if (!to || !subject) {
+//     return res
+//       .status(400)
+//       .send({ error: 'Recipient email and subject are required.' })
+//   }
+
+//   const additionalParams = {
+//     subject: subject,
+//     template: 'Your security token: %token',
+//     timeout: timeout || 300 // Default timeout to 300 seconds
+//   }
+
+//   try {
+//     messagebird.verify.createWithEmail(
+//       FROM_EMAIL,
+//       to,
+//       additionalParams,
+//       (err, response) => {
+//         if (err) {
+//           console.error('Error sending email verification token:', err)
+//           return res
+//             .status(500)
+//             .send({
+//               error: err.message || 'Failed to send email verification token.'
+//             })
+//         }
+//         console.log('Verification token sent:', response)
+//         res.status(200).send(response)
+//       }
+//     )
+//   } catch (error) {
+//       console.log("kilo",error)
+//     console.error('Unexpected error:', error)
+//     res.status(500).send({ error: 'Unexpected error occurred.' })
+//   }
+// })
+
+// app.post('/validate-token', async (req, res) => {
+//   console.log('Validate token API hit')
+//   const { verifyId, token } = req.body
+
+//   if (!verifyId || !token) {
+//     return res.status(400).send({ error: 'verifyId and token are required.' })
+//   }
+
+//   try {
+//     messagebird.verify.verify(verifyId, token, (err, response) => {
+//       if (err) {
+//         console.error('Error validating token:', err)
+//         return res.status(400).send({ error: err.message || 'Invalid token.' })
+//       }
+//       console.log('Token validated:', response)
+//       res.status(200).send(response)
+//     })
+//   } catch (error) {
+//     console.error('Unexpected error:', error)
+//     res.status(500).send({ error: 'Unexpected error occurred.' })
+//   }
+// })
+
+// app.get('/retrieve-email-message/:emailMessageId', async (req, res) => {
+//   const { emailMessageId } = req.params
+
+//   if (!emailMessageId) {
+//     return res.status(400).send({ error: 'Email message ID is required.' })
+//   }
+
+//   try {
+//     messagebird.verify.getVerifyEmailMessage(
+//       emailMessageId,
+//       (err, response) => {
+//         if (err) {
+//           console.error('Error retrieving email message:', err)
+//           return res
+//             .status(500)
+//             .send({ error: err.message || 'Failed to retrieve email message.' })
+//         }
+//         console.log('Retrieved email message:', response)
+//         res.status(200).send(response)
+//       }
+//     )
+//   } catch (error) {
+//     console.error('Unexpected error:', error)
+//     res.status(500).send({ error: 'Unexpected error occurred.' })
+//   }
+// })
+
+// app.listen(5000, () => {
+//   console.log('Backend server running on http://localhost:5000')
+// })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import express from 'express'
+import axios from 'axios'
+import cors from 'cors'
+// const axios = require('axios')
 
 const app = express()
-app.use(bodyParser.json())
 app.use(cors())
+app.use(express.json())
 
-const FROM_EMAIL = 'inbox@eafc6b28-4776-475e-b22f-5bc46248f8fd.us.incoming-email.us-west-2.api.bird.com ' // Replace with the verified sender email
+const ACCESS_KEY = '2c1930bc-991f-4c5a-a617-35f1451282ba' // Replace with your actual access key
+const WORKSPACE_ID = 'f8f5bb9b-7243-48d8-9bcc-29b3792a27aa' // Replace with your workspace ID
+const CHANNEL_ID = '367dbe7b-7e2b-5be1-a4c7-6327128b7b6b' // Replace with your channel ID
 
-app.post('/send-verification-email', async (req, res) => {
-    console.log("api hiit hoooaaah")
-  
-    console.log('Send verification email API hit')
-  const { to, subject, timeout } = req.body
+app.post('/send-message', async (req, res) => {
+  const { email, message, subject } = req.body
 
-  if (!to || !subject) {
-    return res
-      .status(400)
-      .send({ error: 'Recipient email and subject are required.' })
-  }
-
-  const additionalParams = {
-    subject: subject,
-    template: 'Your security token: %token',
-    timeout: timeout || 300 // Default timeout to 300 seconds
+  if (!email || !message || !subject) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing required fields: email, message, or subject.'
+    })
   }
 
   try {
-    messagebird.verify.createWithEmail(
-      FROM_EMAIL,
-      to,
-      additionalParams,
-      (err, response) => {
-        if (err) {
-          console.error('Error sending email verification token:', err)
-          return res
-            .status(500)
-            .send({
-              error: err.message || 'Failed to send email verification token.'
-            })
+    const response = await axios.post(
+      `https://api.bird.com/workspaces/${WORKSPACE_ID}/channels/${CHANNEL_ID}/messages`,
+      {
+        receiver: {
+          contacts: [
+            {
+              identifierKey: 'emailaddress',
+              identifierValue: email
+            }
+          ]
+        },
+        body: {
+          type: 'html',
+          html: {
+            text: message,
+            metadata: {
+              subject: subject
+            }
+          }
         }
-        console.log('Verification token sent:', response)
-        res.status(200).send(response)
+      },
+      {
+        headers: {
+          Authorization: `AccessKey ${ACCESS_KEY}`,
+          'Content-Type': 'application/json'
+        }
       }
     )
-  } catch (error) {
-      console.log("kilo",error)
-    console.error('Unexpected error:', error)
-    res.status(500).send({ error: 'Unexpected error occurred.' })
-  }
-})
 
-app.post('/validate-token', async (req, res) => {
-  console.log('Validate token API hit')
-  const { verifyId, token } = req.body
-
-  if (!verifyId || !token) {
-    return res.status(400).send({ error: 'verifyId and token are required.' })
-  }
-
-  try {
-    messagebird.verify.verify(verifyId, token, (err, response) => {
-      if (err) {
-        console.error('Error validating token:', err)
-        return res.status(400).send({ error: err.message || 'Invalid token.' })
-      }
-      console.log('Token validated:', response)
-      res.status(200).send(response)
+    res.status(200).json({
+      success: true,
+      data: response.data
     })
   } catch (error) {
-    console.error('Unexpected error:', error)
-    res.status(500).send({ error: 'Unexpected error occurred.' })
+    console.error('Error sending email:', error.response?.data || error.message)
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: error.response?.data || error.message
+    })
   }
 })
 
-app.get('/retrieve-email-message/:emailMessageId', async (req, res) => {
-  const { emailMessageId } = req.params
-
-  if (!emailMessageId) {
-    return res.status(400).send({ error: 'Email message ID is required.' })
-  }
-
-  try {
-    messagebird.verify.getVerifyEmailMessage(
-      emailMessageId,
-      (err, response) => {
-        if (err) {
-          console.error('Error retrieving email message:', err)
-          return res
-            .status(500)
-            .send({ error: err.message || 'Failed to retrieve email message.' })
-        }
-        console.log('Retrieved email message:', response)
-        res.status(200).send(response)
-      }
-    )
-  } catch (error) {
-    console.error('Unexpected error:', error)
-    res.status(500).send({ error: 'Unexpected error occurred.' })
-  }
-})
-
-app.listen(5000, () => {
-  console.log('Backend server running on http://localhost:5000')
+// Start the server
+const PORT = 5000
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`)
 })

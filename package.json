@@ -1,5 +1,6 @@
 {
   "name": "viour-backend",
+  "type":"module",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -15,6 +16,7 @@
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "messagebird": "^4.0.1",
+    "node-fetch": "^3.3.2",
     "nodemon": "^3.1.9"
   }
 }
